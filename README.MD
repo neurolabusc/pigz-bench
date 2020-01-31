@@ -1,6 +1,5 @@
 # pigz-bench
 
-
 ## Introduction
 
 This is a simple script to benchmark different zlib compression libraries for the [pigz](https://zlib.net/pigz/) parallel compressor. Parallel compression can use multiple cores available with modern computers to rapidly compress data. This technique can be combined with the [CloudFlare zlib](https://github.com/cloudflare/zlib) which accelerates compression using other features of modern hardware. Here, I have adapted the script to evaluate .gz compression of [NIfTI](https://nifti.nimh.nih.gov/) format brain images. It is common for tools like [AFNI](https://afni.nimh.nih.gov/) and [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) to save NIfTI images using gzip compression (.nii.gz files).  Modern MRI methods such as multi-band yield huge datasets, so considerable [time](https://github.com/rordenlab/niimath) spent compressing these images.   
@@ -19,7 +18,7 @@ Here is the performance for a modern desktop with a 6 core (12 thread) CPU (Ubun
 
 
 
-It is worth noting that [zlib-ng](https://github.com/zlib-ng/zlib-ng/issues/326) is currently focusing on a robust solution that can replace the classic baseline zlib. On the other hand, the CloudFlare zlib aggressively optimizes performance on modern x86-64 computers. However, this dataset does provide a clear example of how these tools perform differently.
+Not shown, the benchmark now also compiles and tests pigz linked to the  [zlib-ng](https://github.com/zlib-ng/zlib-ng/issues/326). The performance falls between the system pigz and the CloudFlare pigz. The zlib-ng is currently focusing on a robust solution that can replace the classic baseline zlib. On the other hand, the CloudFlare zlib aggressively optimizes performance on modern x86-64 computers. However, this dataset does provide a clear example of how these tools perform differently.
 
 ## Running the benchmark
 

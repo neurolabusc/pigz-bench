@@ -32,11 +32,11 @@ cmake -DZLIB_IMPLEMENTATION=System ..
 make
 cp ./bin/pigz $exeSys
 #make zlib-ng pigz
-# exeNG=$exedir/pigzNG
-# rm -rf *
-# cmake -DZLIB_IMPLEMENTATION=ng ..
-# make
-# cp ./bin/pigz $exeNG
+exeNG=$exedir/pigzNG
+rm -rf *
+cmake -DZLIB_IMPLEMENTATION=ng ..
+make
+cp ./bin/pigz $exeNG
 cd $basedir
 rm -rf pigz
 
