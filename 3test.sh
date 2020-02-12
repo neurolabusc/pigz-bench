@@ -58,8 +58,8 @@ for i in {1..32}; do
 		#! python -m json.tool "$file" > /dev/null || echo " --  Valid."
 	done
 done
-ELAPSED="$exenam level=$level sec=$SECONDS threads=$threads"
-echo $ELAPSED
+#ELAPSED="$exenam level=$level sec=$SECONDS threads=$threads"
+#echo $ELAPSED
 if [ ! -z "$(ls $indir)" ]; then
  rm $indir/*.nii.gz
 fi
