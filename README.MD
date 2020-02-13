@@ -4,21 +4,11 @@
 
 This is a simple script to benchmark different zlib compression libraries for the [pigz](https://zlib.net/pigz/) parallel compressor. Parallel compression can use multiple cores available with modern computers to rapidly compress data. This technique can be combined with the [CloudFlare zlib](https://github.com/cloudflare/zlib) which accelerates compression using other features of modern hardware. Here, I have adapted the script to evaluate .gz compression of [NIfTI](https://nifti.nimh.nih.gov/) format brain images. It is common for tools like [AFNI](https://afni.nimh.nih.gov/) and [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) to save NIfTI images using gzip compression (.nii.gz files).  Modern MRI methods such as multi-band yield huge datasets, so considerable [time](https://github.com/rordenlab/niimath) spent compressing these images.   
 
-The  graph below shows the performance of pigz versus the default single-threaded gzip, so that '1' indicates equivalent performance. The horizontal axis shows the number of threads devoted to compression. At lower compression levels (1), all tools are relatively fast, with reading and writing from disk being the rate limiting factor. At higher compression levels the combination of multiple threads and CloudFlare enhancements dramatically accelerate the performance relative to the default gzip.
+The  graph below shows the performance of pigz versus the default single-threaded pigz, so that '1' indicates equivalent performance. Performance is shown for 3 compression levels: fast (3, baesline 35 seconds), default (6, 50s) and slow (9, 183s).The horizontal axis shows the number of threads devoted to compression. At lower compression levels (1), all tools are relatively fast, with reading and writing from disk being the rate limiting factor. At higher compression levels the combination of multiple threads and CloudFlare enhancements dramatically accelerate the performance relative to the default gzip. The test system was a 24-core (48 thread) Intel Xeon Platinum 8260:
+
 ![alt tag](https://github.com/neurolabusc/pigz-bench/blob/master/pigz.png)
 
-Here is the performance for a modern desktop with a 6 core (12 thread) CPU (Ubuntu 18.04, gcc 7.4, Intel i7 8700K):
-
-| Compressor        |      -3       |      -6       |      -9       |
-|-------------------|--------------:|--------------:|--------------:|
-| gzip              | 31.2s (100%)  |  54.2s (100%) | 141.8s (100%) |
-| pigz (system)     |  6.5s (21%)   |   8.9s (17%)  |  18.5s (13%)  |
-| pigz (CloudFlare) |  4.9s (16%)   |   5.9s (11%)  |   7.5s (5%)   |
-
-
-
-
-Not shown, the benchmark now also compiles and tests pigz linked to the  [zlib-ng](https://github.com/zlib-ng/zlib-ng/issues/326). The performance falls between the system pigz and the CloudFlare pigz. The zlib-ng is currently focusing on a robust solution that can replace the classic baseline zlib. On the other hand, the CloudFlare zlib aggressively optimizes performance on modern x86-64 computers. However, this dataset does provide a clear example of how these tools perform differently.
+The zlib-ng performance falls between the system pigz and the CloudFlare pigz. The zlib-ng is currently focusing on a robust solution that can replace the classic baseline zlib. On the other hand, the CloudFlare zlib aggressively optimizes performance on modern x86-64 computers. However, this dataset does provide a clear example of how these tools perform differently.
 
 ## Running the benchmark
 

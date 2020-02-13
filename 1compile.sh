@@ -38,11 +38,11 @@ cmake -DZLIB_IMPLEMENTATION=ng ..
 make
 cp ./bin/pigz $exeNG
 #make zlib-ng pigz
-#exeIntel=$exedir/pigzIntel
-#rm -rf *
-#cmake -DZLIB_IMPLEMENTATION=Intel ..
-#make
-#cp ./bin/pigz $exeIntel
+exeIntel=$exedir/pigzIntel
+rm -rf *
+cmake -DZLIB_IMPLEMENTATION=Intel ..
+make
+cp ./bin/pigz $exeIntel
 
 cd $basedir
 rm -rf pigz
