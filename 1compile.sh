@@ -37,12 +37,18 @@ rm -rf *
 cmake -DZLIB_IMPLEMENTATION=ng ..
 make
 cp ./bin/pigz $exeNG
-#make zlib-ng pigz
+#make zlib-Intel pigz
 exeIntel=$exedir/pigzIntel
 rm -rf *
 cmake -DZLIB_IMPLEMENTATION=Intel ..
 make
 cp ./bin/pigz $exeIntel
+#make zlib-Chromium pigz
+exeChromium=$exedir/pigzChromium
+rm -rf *
+cmake -DZLIB_IMPLEMENTATION=Chromium ..
+make
+cp ./bin/pigz $exeChromium
 
 cd $basedir
 rm -rf pigz
