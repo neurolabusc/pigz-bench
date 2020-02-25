@@ -1,4 +1,5 @@
 #!/bin/bash
+#this script builds pigz using different forks of zlib
 
 # Fail if anything not planed to go wrong, goes wrong
 set -eu
@@ -43,12 +44,6 @@ rm -rf *
 cmake -DZLIB_IMPLEMENTATION=Intel ..
 make
 cp ./bin/pigz $exeIntel
-#make zlib-Chromium pigz
-exeChromium=$exedir/pigzChromium
-rm -rf *
-cmake -DZLIB_IMPLEMENTATION=Chromium ..
-make
-cp ./bin/pigz $exeChromium
 
 cd $basedir
 rm -rf pigz
