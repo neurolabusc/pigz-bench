@@ -22,7 +22,7 @@ rm -rf pigz
 rm -rf $exedir
 mkdir $exedir
 git clone --branch windows https://github.com/neurolabusc/pigz.git
-
+#make CloudFlare pigz
 cd pigz; mkdir build && cd build
 cmake -DZLIB_IMPLEMENTATION=Cloudflare ..
 make
@@ -39,11 +39,11 @@ cmake -DZLIB_IMPLEMENTATION=ng ..
 make
 cp ./bin/pigz $exeNG
 #make zlib-Intel pigz
-exeIntel=$exedir/pigzIntel
-rm -rf *
-cmake -DZLIB_IMPLEMENTATION=Intel ..
-make
-cp ./bin/pigz $exeIntel
+#exeIntel=$exedir/pigzIntel
+#rm -rf *
+#cmake -DZLIB_IMPLEMENTATION=Intel ..
+#make
+#cp ./bin/pigz $exeIntel
 
 cd $basedir
 rm -rf pigz
