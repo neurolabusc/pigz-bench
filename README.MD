@@ -12,11 +12,11 @@ The next graph shows each tool using its preferred number of threads on a 4-core
 
 ![alt tag](https://github.com/neurolabusc/pigz-bench/blob/master/speed_size.png)
 
-The script `5decompress.sh` allows us to compare speed of decompression. Decompression is faster than compression. However, gzip decompression can not leverage multiple threads, and is generally slower than [modern compression formats](https://facebook.github.io/zstd/). Regardless, zlib-ng shows superior decompression performance relative to other zlib versions: 
+The script `5decompress.sh` allows us to compare speed of decompression. Decompression is faster than compression. However, gzip decompression can not leverage multiple threads, and is generally slower than [modern compression formats](https://facebook.github.io/zstd/). In this test, all gz tools are decompressing that data. In contrast, bzip2 and ztd are decompressing data that was compressed to a smaller size. The speen in megabytes per second is calculated based on the decompressed size. It is typical for more compact compression to be use more complicated algorithms, so these comparing between formats is challenging. Regardless, among gz tools, zlib-ng shows superior decompression performance: 
 
-| Method           |   pigz-CF     |   pigz-ng     |   pigz-System |   gzip        |
-| ---------------- | ------------- | ------------- | ------------- | ------------- |
-| Decompression    |         1675  |         1335  |         1889  |         1925  |
+| Speed (mb/s)  | pigz-CF  | pigz-ng  | pigz-Sys |   gzip   |  pbzip2  |  pbzip2  |
+| ------------- | -------- | -------- | -------- | -------- | -------- | -------- |
+| Decompression |     278  |     300  |     274  |     244  |     122  |     236  |
 
 ## Running the benchmark
 
@@ -36,4 +36,11 @@ Run the benchmark with a command like the following:
 4. `4verify.sh` tests the compression and decompression of each method, ensuring that they are able to store data without loss.
 5. `5decompress.sh` evaluates the decompression speed. In general, the gzip format is slow to compress but fast to decompress (particularly compared to formats developed at the same time). However, gzip decompression is slow relative to the modern [zstd](https://facebook.github.io/zstd/). Further, while gzip compression can benefit from parallel processing, decompression does not. An important feature of this script is that each variant of zlib contributes compressed files to the testing corpus, and then each tool is tested on this full corpus. This ensures we are [comparing similar tasks](https://github.com/zlib-ng/zlib-ng/issues/326), as some zlib compression methods might generate smaller files at the cost of creating files that are slower to decompress.
 6. `6speed_size.sh` compares different variants of pigz to gzip, zstd and bzip2 for compressing the [Silesia corpus](http://sun.aei.polsl.pl/~sdeor/index.php?page=silesia). Each tool is tested at different compression levels, but always using the preferred number of threads.
+
+## Alternatives
+
+ - Python users may want to examine [mgzip](https://pypi.org/project/mgzip/). Like pigz, mgzip can compress files to gz format in parallel. However, it can also decompress files created with mgzip in parallel. The gz files created by mgzip are completely valid gzip files, so they can be decompressed by any gzip compatible tool. However, these files require a tiny bit more disk space which allows parallel blocked decompression (as long as you use mgzip to do the decompression). For optimal performance, one should set a `blocksize` that correspnds to the number of threads for compression. This repository includes the `test_mgzip.py` script to evaluate this tool.
+ - Python users can use [indexed-gzip](https://pypi.org/project/indexed-gzip/) to generate an index file for any gzip file. This index file accelerates random access to a gzip file.
+ 
+ 
 

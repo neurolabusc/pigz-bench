@@ -54,7 +54,6 @@ for file in $exedir/*; do
 		startTime=$(date +%s%3N)
 		$cmd
 		ms=$(($(date +%s%3N)-$startTime))
-		#cmd="./_sizefrac.sh $indir"
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 			bytesz=$(stat -f%z "$tarfileExt")
 		else
@@ -75,7 +74,6 @@ for lvl in {1,2,3,4,5,6,7,8,9}; do
 	startTime=$(date +%s%3N)
 	$cmd
 	ms=$(($(date +%s%3N)-$startTime))
-	#cmd="./_sizefrac.sh $indir"
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		bytesz=$(stat -f%z "$tarfileExt")
 	else
