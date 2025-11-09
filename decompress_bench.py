@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-decompress_perfile_bench.py
+decompress_bench.py
 
 Per-file compression + decompression benchmark.
 
@@ -14,8 +14,8 @@ Per-file compression + decompression benchmark.
 - Writes a TSV with columns: method\tmb_s and prints a Markdown table.
 
 Usage:
-    python3 decompress_perfile_bench.py
-    python3 decompress_perfile_bench.py --exe-dir ./exe --levels 1 3 9 --zstd-levels 1 3 19 --nruns 5
+    python3 decompress_bench.py
+    python3 decompress_bench.py --exe-dir ./exe --levels 1 3 9 --zstd-levels 1 3 19 --nruns 5
 """
 from pathlib import Path
 import argparse

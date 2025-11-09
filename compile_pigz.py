@@ -49,6 +49,72 @@ def copy_tree_find(src_root: Path, pattern: str, dest_dir: Path):
             shutil.copy2(p, dest_dir)
     print(f"Copied {len(found)} files matching {pattern}")
 
+def build_and_copy_libdeflate(basedir: Path, exedir: Path, optimize: bool = False):
+    """
+    Clone libdeflate, build with CMake Release, and copy libdeflate-gzip -> exe/libdeflate (or .exe on Windows).
+    """
+    repo_dir = basedir / "libdeflate"
+    build_dir = repo_dir / "build"
+    # Remove existing clone to ensure fresh build
+    rm_rf(repo_dir)
+
+    print("Cloning libdeflate...")
+    run(["git", "clone", "https://github.com/ebiggers/libdeflate.git"], cwd=str(basedir))
+
+    # Ensure build dir exists
+    if build_dir.exists():
+        rm_rf(build_dir)
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    # Configure step: use Release and forward optional knobs similar to pigz script
+    cmake_cmd = ["cmake", "-DCMAKE_BUILD_TYPE=Release", ".."]
+    if optimize:
+        # If your top-level CMake supports these options, enable them for libdeflate as well.
+        # (These flags will be ignored if libdeflate CMakeLists.txt doesn't define them.)
+        cmake_cmd.insert(1, "-DENABLE_LTO=ON")
+        cmake_cmd.insert(1, "-DTUNE_NATIVE=ON")
+
+    print(f"> Configuring libdeflate: {' '.join(cmake_cmd)} (cwd={build_dir})")
+    run(cmake_cmd, cwd=str(build_dir))
+
+    # Build step
+    print("> Building libdeflate...")
+    run(["cmake", "--build", str(build_dir), "--config", "Release"], cwd=str(repo_dir))
+
+    # Program path: build/programs/libdeflate-gzip (or libdeflate-gzip.exe)
+    prog_dir = build_dir / "programs"
+    # Accept either exact name or platform-suffixed
+    exe_suffix = ".exe" if os.name == "nt" else ""
+    candidates = [
+        prog_dir / f"libdeflate-gzip{exe_suffix}",
+        prog_dir / f"libdeflate_gzip{exe_suffix}",
+    ]
+    found = None
+    for c in candidates:
+        if c.exists():
+            found = c
+            break
+    # Fallback: try glob for anything starting with libdeflate-gzip
+    if found is None and prog_dir.exists():
+        for p in prog_dir.iterdir():
+            if p.is_file() and p.name.startswith("libdeflate-gzip"):
+                found = p
+                break
+
+    if not found:
+        raise RuntimeError(f"Could not find built libdeflate-gzip executable in {prog_dir}")
+
+    # Destination path: ./exe/libdeflate (preserve .exe on Windows)
+    dest_name = "libdeflate.exe" if os.name == "nt" else "libdeflate"
+    dest_path = exedir / dest_name
+    ensure_dir(exedir)
+    print(f"Copying {found} -> {dest_path}")
+    shutil.copy2(str(found), str(dest_path))
+    if os.name != "nt":
+        dest_path.chmod(0o755)
+    print("libdeflate installed to", dest_path)
+    rm_rf(repo_dir)
+
 def main():
     try:
         parser = argparse.ArgumentParser(description="Compile pigz variants")
@@ -137,7 +203,9 @@ def main():
         # cleanup pigz source tree
         print("Cleaning up pigz source directory...")
         rm_rf(pigz_dir)
-
+        # libdeflate
+        print("Building libdeflate and copying its gzip program to ./exe/")
+        build_and_copy_libdeflate(basedir, exedir, optimize=args.optimize)
         print("Success: run 'compress_bench.py' and 'decompress_bench.py'")
 
     except subprocess.CalledProcessError as e:
