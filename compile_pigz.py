@@ -115,6 +115,89 @@ def build_and_copy_libdeflate(basedir: Path, exedir: Path, optimize: bool = Fals
     print("libdeflate installed to", dest_path)
     rm_rf(repo_dir)
 
+def build_and_copy_zlibng(basedir: Path, exedir: Path, optimize: bool = False):
+    """
+    Clone zlib-ng, build with CMake Release, and copy minigzip -> exe/minigzip-ng (or .exe on Windows).
+    Mirrors:
+      git clone https://github.com/zlib-ng/zlib-ng.git
+      cd zlib-ng
+      cmake .
+      cmake --build . --config Release
+    """
+    repo_dir = basedir / "zlib-ng"
+    build_dir = repo_dir / "build"
+
+    # Remove existing clone to ensure fresh build
+    rm_rf(repo_dir)
+
+    print("Cloning zlib-ng...")
+    run(["git", "clone", "https://github.com/zlib-ng/zlib-ng.git"], cwd=str(basedir))
+
+    # Create or clean the build directory (in-tree build is okay, but we use build/ for out-of-tree)
+    if build_dir.exists():
+        rm_rf(build_dir)
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    # Configure step: use Release. If optimize flags should be forwarded, pass them as -D flags.
+    cmake_cmd = ["cmake", "-DCMAKE_BUILD_TYPE=Release", ".."]
+    if optimize:
+        # zlib-ng's CMake may ignore these, but passing is harmless if not defined
+        cmake_cmd.insert(1, "-DENABLE_LTO=ON")
+        cmake_cmd.insert(1, "-DTUNE_NATIVE=ON")
+
+    print(f"> Configuring zlib-ng: {' '.join(cmake_cmd)} (cwd={build_dir})")
+    run(cmake_cmd, cwd=str(build_dir))
+
+    # Build step
+    print("> Building zlib-ng...")
+    run(["cmake", "--build", str(build_dir), "--config", "Release"], cwd=str(build_dir))
+
+    # Typical produced program paths (try a few likely places)
+    exe_suffix = ".exe" if os.name == "nt" else ""
+    candidates = [
+        build_dir / f"minigzip{exe_suffix}",
+        build_dir / "programs" / f"minigzip{exe_suffix}",
+        repo_dir / f"minigzip{exe_suffix}",
+        repo_dir / "programs" / f"minigzip{exe_suffix}",
+    ]
+
+    found = None
+    for c in candidates:
+        if c.exists():
+            found = c
+            break
+
+    # Fallback: scan build tree for anything named starting with 'minigzip'
+    if found is None and build_dir.exists():
+        for p in build_dir.rglob("minigzip*"):
+            if p.is_file():
+                found = p
+                break
+
+    if not found:
+        # Last resort: scan entire repo dir (slow, but robust)
+        for p in repo_dir.rglob("minigzip*"):
+            if p.is_file():
+                found = p
+                break
+
+    if not found:
+        raise RuntimeError(f"Could not find built minigzip executable under {build_dir} or {repo_dir}")
+
+    # Destination path: ./exe/minigzip-ng (preserve .exe on Windows)
+    dest_name = "minigzip-ng.exe" if os.name == "nt" else "minigzip-ng"
+    dest_path = exedir / dest_name
+    ensure_dir(exedir)
+    print(f"Copying {found} -> {dest_path}")
+    shutil.copy2(str(found), str(dest_path))
+    if os.name != "nt":
+        dest_path.chmod(0o755)
+    print("minigzip-ng installed to", dest_path)
+
+    # Optional: remove the cloned zlib-ng source to save space
+    rm_rf(repo_dir)
+
+
 def main():
     try:
         parser = argparse.ArgumentParser(description="Compile pigz variants")
@@ -206,6 +289,9 @@ def main():
         # libdeflate
         print("Building libdeflate and copying its gzip program to ./exe/")
         build_and_copy_libdeflate(basedir, exedir, optimize=args.optimize)
+        # zlib-ng
+        print("Building zlib-ng and copying its gzip program to ./exe/")
+        build_and_copy_zlibng(basedir, exedir, optimize=args.optimize)
         print("Success: run 'compress_bench.py' and 'decompress_bench.py'")
 
     except subprocess.CalledProcessError as e:

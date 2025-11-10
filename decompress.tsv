@@ -1,7 +1,0 @@
-method	mb_s
-gzip	924.95
-libdeflate	1027.43
-pigzCF	474.75
-pigzNG	478.19
-pigzSys	845.9
-zstd	1198.79
